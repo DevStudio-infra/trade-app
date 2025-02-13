@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
-import Stripe from "stripe";
+import { NextResponse } from "next/server";
+import { Stripe } from "stripe";
 
 import { env } from "@/env.mjs";
 import { prisma } from "@/lib/db";
@@ -18,7 +19,54 @@ export async function POST(req: Request) {
       env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (error) {
-    return new Response(`Webhook Error: ${error.message}`, { status: 400 });
+    return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
+  }
+
+  const session = event.data.object as Stripe.Checkout.Session;
+
+  if (event.type === "checkout.session.completed") {
+    // Handle credit purchase
+    if (session.metadata?.userId && session.metadata?.amount) {
+      const userId = session.metadata.userId;
+      const amount = parseInt(session.metadata.amount);
+
+      try {
+        // Get or create user's credit record
+        const credit = await prisma.aICredit.upsert({
+          where: {
+            userId: userId,
+          },
+          create: {
+            userId: userId,
+            balance: amount,
+          },
+          update: {
+            balance: {
+              increment: amount,
+            },
+          },
+        });
+
+        // Create transaction record
+        await prisma.aICreditTransaction.create({
+          data: {
+            creditId: credit.id,
+            amount: amount,
+            type: "PURCHASE",
+            status: "COMPLETED",
+            metadata: {
+              stripeSessionId: session.id,
+              amount: session.amount_total,
+            },
+          },
+        });
+      } catch (error) {
+        console.error("Error processing credit purchase:", error);
+        return new NextResponse("Error processing credit purchase", {
+          status: 500,
+        });
+      }
+    }
   }
 
   if (event.type === "checkout.session.completed") {
@@ -73,5 +121,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return new Response(null, { status: 200 });
+  return new NextResponse(null, { status: 200 });
 }

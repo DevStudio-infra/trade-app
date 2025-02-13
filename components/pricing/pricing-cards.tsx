@@ -36,14 +36,21 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
     return (
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-3xl border shadow-sm",
+          "relative flex flex-col overflow-hidden rounded-3xl border shadow-sm transition-all duration-200 hover:border-blue-200/50 hover:shadow-md",
           offer.title.toLocaleLowerCase() === "pro"
-            ? "-m-0.5 border-2 border-purple-400"
-            : "",
+            ? "-m-0.5 border-2 border-blue-400 bg-gradient-to-br from-blue-50/50 to-blue-100/50 dark:from-blue-900/10 dark:to-blue-900/20"
+            : "hover:bg-blue-50/50 dark:hover:bg-blue-950/10",
         )}
         key={offer.title}
       >
-        <div className="min-h-[150px] items-start space-y-4 bg-muted/50 p-6">
+        <div
+          className={cn(
+            "min-h-[150px] items-start space-y-4 p-6",
+            offer.title.toLocaleLowerCase() === "pro"
+              ? "bg-gradient-to-br from-blue-50/80 to-blue-100/80 dark:from-blue-900/20 dark:to-blue-900/30"
+              : "bg-muted/50",
+          )}
+        >
           <p className="flex font-urban text-sm font-bold uppercase tracking-wider text-muted-foreground">
             {offer.title}
           </p>
@@ -80,7 +87,7 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
           <ul className="space-y-2 text-left text-sm font-medium leading-normal">
             {offer.benefits.map((feature) => (
               <li className="flex items-start gap-x-3" key={feature}>
-                <Icons.check className="size-5 shrink-0 text-purple-500" />
+                <Icons.check className="size-5 shrink-0 text-blue-500" />
                 <p>{feature}</p>
               </li>
             ))}
@@ -127,6 +134,11 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
               }
               rounded="full"
               onClick={() => setShowSignInModal(true)}
+              className={cn(
+                offer.title.toLocaleLowerCase() === "pro"
+                  ? "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                  : "hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/50",
+              )}
             >
               Sign in
             </Button>
@@ -148,18 +160,18 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
             defaultValue={isYearly ? "yearly" : "monthly"}
             onValueChange={toggleBilling}
             aria-label="toggle-year"
-            className="h-9 overflow-hidden rounded-full border bg-background p-1 *:h-7 *:text-muted-foreground"
+            className="h-9 overflow-hidden rounded-full border bg-background p-1 *:h-7 *:text-muted-foreground hover:border-blue-200/50"
           >
             <ToggleGroupItem
               value="yearly"
-              className="rounded-full px-5 data-[state=on]:!bg-primary data-[state=on]:!text-primary-foreground"
+              className="rounded-full px-5 hover:bg-blue-50 data-[state=on]:!bg-blue-500 data-[state=on]:!text-primary-foreground dark:hover:bg-blue-950/50"
               aria-label="Toggle yearly billing"
             >
               Yearly (-20%)
             </ToggleGroupItem>
             <ToggleGroupItem
               value="monthly"
-              className="rounded-full px-5 data-[state=on]:!bg-primary data-[state=on]:!text-primary-foreground"
+              className="rounded-full px-5 hover:bg-blue-50 data-[state=on]:!bg-blue-500 data-[state=on]:!text-primary-foreground dark:hover:bg-blue-950/50"
               aria-label="Toggle monthly billing"
             >
               Monthly
@@ -167,7 +179,7 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
           </ToggleGroup>
         </div>
 
-        <div className="grid gap-5 bg-inherit py-5 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-4xl gap-5 bg-inherit py-5 md:grid-cols-2 lg:grid-cols-2">
           {pricingData.map((offer) => (
             <PricingCard offer={offer} key={offer.title} />
           ))}

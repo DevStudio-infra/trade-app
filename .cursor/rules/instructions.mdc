@@ -1,0 +1,100 @@
+---
+description: general instructions
+globs: *
+---
+Next.js React TypeScript
+You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI and Tailwind.
+
+Key Principles
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Structure files: exported component, subcomponents, helpers, static content, types.
+
+Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Favor named exports for components.
+
+TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Use functional components with TypeScript interfaces.
+
+Syntax and Formatting
+- Use the "function" keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use declarative JSX.
+
+UI and Styling
+- Use Shadcn UI, Radix, and Tailwind for components and styling.
+- Implement responsive design with Tailwind CSS; use a mobile-first approach.
+
+Performance Optimization
+- Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC).
+- Wrap client components in Suspense with fallback.
+- Use dynamic loading for non-critical components.
+- Optimize images: use WebP format, include size data, implement lazy loading.
+
+Key Conventions
+- Use 'nuqs' for URL search parameter state management.
+- Optimize Web Vitals (LCP, CLS, FID).
+- Limit 'use client':
+  - Favor server components and Next.js SSR.
+  - Use only for Web API access in small components.
+  - Avoid for data fetching or state management.
+
+Device Detection
+- Use the global device detection system for responsive behavior:
+  ```typescript
+  import { useDevice } from '@/lib/hooks/use-device';
+  
+  // Access device state
+  const { isMobile, isTablet, isDesktop } = useDevice();
+  ```
+- Device states are mutually exclusive:
+  - isMobile: true for phones only
+  - isTablet: true for tablet devices
+  - isDesktop: true for desktop/laptop devices
+- Device detection is handled by DeviceProvider in layout.tsx
+- Uses react-device-detect under the hood
+- State management through Zustand for performance
+- Automatically logs device info in development mode
+
+Follow Next.js docs for Data Fetching, Rendering, and Routing.
+
+## Performance Optimization
+
+- **Limit `use client`**: Favor **React Server Components (RSC)**.
+- Avoid unnecessary `useEffect` and `setState` when possible.
+- Wrap client components in `Suspense` with a fallback.
+- Use **dynamic imports** for non-critical components (`next/dynamic`).
+- Optimize images:
+  - Use **WebP format**.
+  - Include **explicit width and height** for layout stability.
+  - Implement **lazy loading** (`loading="lazy"`).
+
+## Key Conventions
+
+- Use `nuqs` for URL search parameter state management.
+- Optimize Web Vitals (**LCP, CLS, FID**).
+- Follow Next.js best practices for **Data Fetching, Rendering, and Routing**.
+- Avoid using `use client` for:
+  - Data fetching (favor **server components** or **Next.js SSR**).
+  - State management (use **Zustand** when necessary).
+
+## Task Management & Scratchpad Usage
+
+- Maintain a **Scratchpad** to track progress, structure thoughts, and plan tasks.
+- When receiving a new task:
+  - **Review** the Scratchpad.
+  - **Clear old tasks** if necessary.
+  - **Plan steps** before execution.
+- Use **TODO markers** to track task progress:
+  - `[X]` Completed Task
+  - `[ ]` Pending Task
+- Update the Scratchpad with progress details after completing subtasks.
+- Use the Scratchpad for **reflection and planning**, especially after milestones.
+- Always refer to the Scratchpad when deciding the next step.
+
+# Scratchpad

@@ -3,18 +3,21 @@ import { env } from "@/env.mjs";
 
 export const pricingData: SubscriptionPlan[] = [
   {
-    title: "Starter",
-    description: "For Beginners",
+    title: "Free",
+    description: "Perfect for getting started with AI trading analysis",
     benefits: [
-      "Up to 100 monthly posts",
-      "Basic analytics and reporting",
-      "Access to standard templates",
+      "6 credits per month",
+      "Basic chart pattern recognition",
+      "Real-time market analysis",
+      "Email support (48h response)",
+      "Basic trading insights",
     ],
     limitations: [
-      "No priority access to new features.",
-      "Limited customer support",
-      "No custom branding",
-      "Limited access to business resources.",
+      "Limited to basic patterns",
+      "Standard response time",
+      "No historical analysis",
+      "Basic AI model only",
+      "No discount on credit purchases",
     ],
     prices: {
       monthly: 0,
@@ -27,18 +30,20 @@ export const pricingData: SubscriptionPlan[] = [
   },
   {
     title: "Pro",
-    description: "Unlock Advanced Features",
+    description: "Advanced analysis for serious traders",
     benefits: [
-      "Up to 500 monthly posts",
-      "Advanced analytics and reporting",
-      "Access to business templates",
-      "Priority customer support",
-      "Exclusive webinars and training.",
+      "100 credits per month",
+      "20% discount on credit purchases",
+      "Advanced pattern recognition",
+      "Real-time & historical analysis",
+      "Priority support (24h response)",
+      "Custom chart annotations",
+      "Faster response time",
+      "Advanced AI trading insights",
+      "Export detailed reports",
+      "Advanced AI models",
     ],
-    limitations: [
-      "No custom branding",
-      "Limited access to business resources.",
-    ],
+    limitations: [],
     prices: {
       monthly: 15,
       yearly: 144,
@@ -48,116 +53,75 @@ export const pricingData: SubscriptionPlan[] = [
       yearly: env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PLAN_ID,
     },
   },
-  {
-    title: "Business",
-    description: "For Power Users",
-    benefits: [
-      "Unlimited posts",
-      "Real-time analytics and reporting",
-      "Access to all templates, including custom branding",
-      "24/7 business customer support",
-      "Personalized onboarding and account management.",
-    ],
-    limitations: [],
-    prices: {
-      monthly: 30,
-      yearly: 300,
-    },
-    stripeIds: {
-      monthly: env.NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PLAN_ID,
-      yearly: env.NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PLAN_ID,
-    },
-  },
 ];
 
-export const plansColumns = [
-  "starter",
-  "pro",
-  "business",
-  "enterprise",
-] as const;
+export const plansColumns = ["free", "pro"] as const;
 
 export const comparePlans: PlansRow[] = [
   {
-    feature: "Access to Analytics",
-    starter: true,
+    feature: "Monthly Credits",
+    free: "6",
+    pro: "100",
+    tooltip:
+      "Credits are used for AI analysis requests. Each chart analysis consumes one credit",
+  },
+  {
+    feature: "Credit Purchase Discount",
+    free: "None",
+    pro: "20% off",
+    tooltip: "Pro users get a 20% discount on all additional credit purchases",
+  },
+  {
+    feature: "Response Time",
+    free: "Standard (48h)",
+    pro: "Priority (24h)",
+    tooltip: "Time to receive support responses and AI analysis results",
+  },
+  {
+    feature: "Pattern Recognition",
+    free: "Basic",
+    pro: "Advanced",
+    tooltip:
+      "Pro includes advanced algorithms for more accurate pattern detection and market analysis",
+  },
+  {
+    feature: "Real-time Analysis",
+    free: true,
     pro: true,
-    business: true,
-    enterprise: "Custom",
-    tooltip: "All plans include basic analytics for tracking performance.",
+    tooltip: "Analyze current market conditions and trading patterns",
   },
   {
-    feature: "Custom Branding",
-    starter: null,
-    pro: "500/mo",
-    business: "1,500/mo",
-    enterprise: "Unlimited",
-    tooltip: "Custom branding is available from the Pro plan onwards.",
-  },
-  {
-    feature: "Priority Support",
-    starter: null,
-    pro: "Email",
-    business: "Email & Chat",
-    enterprise: "24/7 Support",
-  },
-  {
-    feature: "Advanced Reporting",
-    starter: null,
-    pro: null,
-    business: true,
-    enterprise: "Custom",
-    tooltip:
-      "Advanced reporting is available in Business and Enterprise plans.",
-  },
-  {
-    feature: "Dedicated Manager",
-    starter: null,
-    pro: null,
-    business: null,
-    enterprise: true,
-    tooltip: "Enterprise plan includes a dedicated account manager.",
-  },
-  {
-    feature: "API Access",
-    starter: "Limited",
-    pro: "Standard",
-    business: "Enhanced",
-    enterprise: "Full",
-  },
-  {
-    feature: "Monthly Webinars",
-    starter: false,
+    feature: "Historical Analysis",
+    free: false,
     pro: true,
-    business: true,
-    enterprise: "Custom",
-    tooltip: "Pro and higher plans include access to monthly webinars.",
-  },
-  {
-    feature: "Custom Integrations",
-    starter: false,
-    pro: false,
-    business: "Available",
-    enterprise: "Available",
     tooltip:
-      "Custom integrations are available in Business and Enterprise plans.",
+      "Access and analyze historical trading data for better pattern recognition",
   },
   {
-    feature: "Roles and Permissions",
-    starter: null,
-    pro: "Basic",
-    business: "Advanced",
-    enterprise: "Advanced",
+    feature: "AI Model",
+    free: "Basic",
+    pro: "Advanced",
     tooltip:
-      "User roles and permissions management improves with higher plans.",
+      "Pro users get access to our most sophisticated AI models for trading analysis",
   },
   {
-    feature: "Onboarding Assistance",
-    starter: false,
-    pro: "Self-service",
-    business: "Assisted",
-    enterprise: "Full Service",
-    tooltip: "Higher plans include more comprehensive onboarding assistance.",
+    feature: "Custom Annotations",
+    free: false,
+    pro: true,
+    tooltip: "Add, save, and manage custom annotations on your trading charts",
   },
-  // Add more rows as needed
+  {
+    feature: "Export Reports",
+    free: false,
+    pro: true,
+    tooltip:
+      "Generate and download detailed analysis reports in multiple formats",
+  },
+  {
+    feature: "Trading Insights",
+    free: "Basic",
+    pro: "Advanced",
+    tooltip:
+      "Get AI-powered insights about market trends and trading opportunities",
+  },
 ];

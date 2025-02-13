@@ -10,9 +10,11 @@ import { marketingConfig } from "@/config/marketing";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { useScroll } from "@/hooks/use-scroll";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocsSearch } from "@/components/docs/search";
+import { ModeToggle } from "@/components/layout/mode-toggle";
 import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
@@ -71,6 +73,14 @@ export function NavBar({ scroll = false }: NavBarProps) {
                   )}
                 >
                   {item.title}
+                  {item.badge && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 rounded-md px-1.5 py-0.5 font-normal"
+                    >
+                      {item.badge}
+                    </Badge>
+                  )}
                 </Link>
               ))}
             </nav>
@@ -99,6 +109,8 @@ export function NavBar({ scroll = false }: NavBarProps) {
               </div>
             </div>
           ) : null}
+
+          <ModeToggle />
 
           {session ? (
             <Link
