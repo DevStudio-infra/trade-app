@@ -131,6 +131,7 @@ export const WindowCapture = forwardRef<WindowCaptureRef, WindowCaptureProps>(
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: "window",
+            frameRate: 30,
           },
           audio: false,
         });
@@ -138,16 +139,20 @@ export const WindowCapture = forwardRef<WindowCaptureRef, WindowCaptureProps>(
         // Create and setup video element
         const video = document.createElement("video");
         video.srcObject = stream;
+        video.autoplay = true;
+        video.muted = true;
 
         // Store references
         streamRef.current = stream;
         videoRef.current = video;
 
-        // Wait for video metadata
+        // Wait for video metadata and first frame
         await new Promise((resolve) => {
           video.onloadedmetadata = () => {
-            video.play();
-            resolve(true);
+            video.play().then(() => {
+              // Wait a bit to ensure frame is ready
+              setTimeout(resolve, 500);
+            });
           };
         });
 
@@ -173,17 +178,33 @@ export const WindowCapture = forwardRef<WindowCaptureRef, WindowCaptureProps>(
         return null;
       }
 
-      const video = videoRef.current;
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      try {
+        const video = videoRef.current;
 
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(video, 0, 0);
+        // Create an offscreen canvas
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { alpha: false });
+        if (!ctx) return null;
 
-      const screenshot = canvas.toDataURL("image/png");
-      setCapturedImage(screenshot);
-      return screenshot;
+        // Set exact dimensions from the video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Clear canvas and set white background
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the video frame
+        ctx.drawImage(video, 0, 0);
+
+        // Convert to JPEG with high quality
+        const base64Image = canvas.toDataURL("image/jpeg", 0.95);
+        setCapturedImage(base64Image);
+        return base64Image;
+      } catch (error) {
+        console.error("Error taking screenshot:", error);
+        return null;
+      }
     };
 
     const captureScreen = async () => {
@@ -244,29 +265,20 @@ export const WindowCapture = forwardRef<WindowCaptureRef, WindowCaptureProps>(
 
     return (
       <div className="space-y-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="lg"
-              className={className}
-              onClick={isWindowLocked ? releaseWindow : initializeCapture}
-            >
-              {isWindowLocked ? (
-                <>
+        {isWindowLocked ? (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="order-2 space-y-4 md:order-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className={className}
+                  onClick={releaseWindow}
+                >
                   <Unlock className="mr-2 size-4" />
                   Release Window
-                </>
-              ) : (
-                <>
-                  <Lock className="mr-2 size-4" />
-                  Lock Window
-                </>
-              )}
-            </Button>
+                </Button>
 
-            {isWindowLocked && (
-              <>
                 <Button
                   variant="default"
                   size="lg"
@@ -277,91 +289,51 @@ export const WindowCapture = forwardRef<WindowCaptureRef, WindowCaptureProps>(
                   <Camera className="mr-2 size-4" />
                   {isCapturing ? "Capturing..." : "Update Screenshot"}
                 </Button>
+              </div>
 
-                <div className="min-w-[300px] flex-1">
-                  <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
-                    <Timer className="size-4 text-muted-foreground" />
-                    <div className="flex flex-1 items-center gap-2">
-                      <Select
-                        value={selectedInterval}
-                        onValueChange={handleIntervalChange}
-                      >
-                        <SelectTrigger className="w-[180px] bg-background">
-                          <SelectValue placeholder="Capture Interval" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(CAPTURE_INTERVALS).map(
-                            ([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectContent>
-                      </Select>
-
-                      {selectedInterval === "custom" && (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min="1"
-                            max={MAX_INTERVAL}
-                            value={customInterval}
-                            onChange={(e) =>
-                              handleCustomIntervalChange(e.target.value)
-                            }
-                            className="w-20 bg-background"
-                            placeholder="1-60"
-                          />
-                          <span className="text-sm text-muted-foreground">
-                            minutes
-                          </span>
-                        </div>
+              <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
+                <Timer className="size-4 shrink-0 text-muted-foreground" />
+                <div className="flex flex-1 flex-wrap items-center gap-2">
+                  <Select
+                    value={selectedInterval}
+                    onValueChange={handleIntervalChange}
+                  >
+                    <SelectTrigger className="w-[180px] bg-background">
+                      <SelectValue placeholder="Capture Interval" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(CAPTURE_INTERVALS).map(
+                        ([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ),
                       )}
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+                    </SelectContent>
+                  </Select>
 
-          {isWindowLocked && (
-            <div className="flex items-start gap-4">
-              <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-                <DialogTrigger asChild>
-                  <button className="relative overflow-hidden rounded-lg border transition-colors hover:border-primary">
-                    <div className="relative aspect-video w-40">
-                      {capturedImage && (
-                        <img
-                          src={capturedImage}
-                          alt="Locked window preview"
-                          className="h-full w-full object-cover"
-                        />
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 transition-colors hover:bg-black/10">
-                        <p className="text-xs font-medium">Click to enlarge</p>
-                      </div>
-                    </div>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>Captured Window Preview</DialogTitle>
-                  </DialogHeader>
-                  <div className="relative mt-2 aspect-video">
-                    {capturedImage && (
-                      <img
-                        src={capturedImage}
-                        alt="Locked window preview"
-                        className="h-full w-full rounded-lg object-contain"
+                  {selectedInterval === "custom" && (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        max={MAX_INTERVAL}
+                        value={customInterval}
+                        onChange={(e) =>
+                          handleCustomIntervalChange(e.target.value)
+                        }
+                        className="w-20 bg-background"
+                        placeholder="1-60"
                       />
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+                      <span className="whitespace-nowrap text-sm text-muted-foreground">
+                        minutes
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-              <p className="flex-1 text-sm text-muted-foreground">
-                Window is locked.{" "}
+              <p className="text-sm text-muted-foreground">
                 {selectedInterval === "0"
                   ? "Manual capture mode."
                   : `Auto-capturing every ${
@@ -371,8 +343,34 @@ export const WindowCapture = forwardRef<WindowCaptureRef, WindowCaptureProps>(
                     } minutes.`}
               </p>
             </div>
-          )}
-        </div>
+
+            {capturedImage && (
+              <div className="order-1 flex items-center justify-center md:order-2">
+                <div className="relative w-full max-w-md overflow-hidden rounded-lg border bg-background shadow-sm">
+                  <div className="relative aspect-video">
+                    <img
+                      src={capturedImage}
+                      alt="Locked window preview"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            <Button
+              variant="outline"
+              size="lg"
+              className={className}
+              onClick={initializeCapture}
+            >
+              <Lock className="mr-2 size-4" />
+              Lock Window
+            </Button>
+          </div>
+        )}
       </div>
     );
   },

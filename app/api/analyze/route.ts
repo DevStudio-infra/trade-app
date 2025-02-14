@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
+import { Prisma } from "@prisma/client";
 
 import { embeddingService } from "@/lib/embeddings/gemini-embeddings";
 import { ragFeedbackService } from "@/lib/feedback/rag-feedback";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
@@ -18,6 +20,11 @@ interface TradeScore {
   overallScore: number;
   confidence: number;
   explanation: string;
+  timeframeRecommendations: {
+    shouldCheckOther: boolean;
+    suggestedTimeframes: string[];
+    reason: string;
+  };
 }
 
 interface TradeGuidance {
@@ -39,6 +46,7 @@ interface AnalysisResponse {
   guidance?: TradeGuidance;
   analysis: string;
   context: Array<{ id: string; category: string; similarity: number }>;
+  timestamp: string; // ISO string format
 }
 
 export async function POST(req: Request) {
@@ -49,10 +57,24 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { image, prompt, type = "OPPORTUNITY" } = await req.json();
+    const { image, prompt, type = "OPPORTUNITY", sessionId } = await req.json();
 
     if (!image || !prompt) {
       return new NextResponse("Missing required fields", { status: 400 });
+    }
+
+    // Verify session exists and belongs to user
+    if (sessionId) {
+      const session = await prisma.analysisSession.findUnique({
+        where: {
+          id: sessionId,
+          userId: user.id!,
+        },
+      });
+
+      if (!session) {
+        return new NextResponse("Invalid session", { status: 400 });
+      }
     }
 
     // Get relevant trading knowledge
@@ -89,6 +111,11 @@ ${
 Analyze this trading chart for potential opportunities. ${prompt}
 
 First, identify if there are any specific questions in the user's prompt and make sure to address them directly in your explanation.
+
+Consider timeframe context:
+1. Assess if the current timeframe provides sufficient context
+2. Suggest checking higher/lower timeframes if needed for better confirmation
+3. Recommend specific timeframes that could provide valuable additional insights
 
 Score this opportunity using these strict criteria:
 
@@ -128,11 +155,17 @@ Provide the analysis in the following JSON format:
   "riskScore": <score based on above criteria>,
   "overallScore": <weighted average as described above>,
   "confidence": <0-100 based on analysis certainty>,
+  "timeframeRecommendations": {
+    "shouldCheckOther": <true/false>,
+    "suggestedTimeframes": [<list of recommended timeframes to check>],
+    "reason": "<explanation of why these timeframes would be valuable>"
+  },
   "explanation": "<Start with a direct response to any user questions. Then explain the scoring:
     - If overall score >= 80: Strongly recommend the opportunity
     - If overall score 70-79: Highlight both positives and cautions
     - If overall score < 70: Explain why it's not recommended
 
+    Include specific timeframe suggestions if relevant.
     Use a conversational tone and address the user directly.>"
 }
 `
@@ -200,10 +233,66 @@ Additional considerations:
       // Extract JSON from the response text (it might be wrapped in other text)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        parsedResponse = JSON.parse(jsonMatch[0]);
+        try {
+          // First attempt: Try parsing the original JSON
+          parsedResponse = JSON.parse(jsonMatch[0]);
+        } catch (originalParseError) {
+          console.warn("Failed to parse original JSON, attempting cleanup");
+
+          // Second attempt: Clean and parse
+          const jsonStr = jsonMatch[0]
+            .replace(/[\u0000-\u0019]+/g, "") // Remove control characters
+            .replace(/\\([^"\/bfnrtu])/g, "$1") // Remove invalid escapes
+            .replace(/([^\\])"/g, '$1\\"') // Escape unescaped quotes
+            .replace(/^\s*"|"\s*$/g, '"') // Ensure proper quote wrapping
+            .replace(/\n/g, "\\n") // Properly escape newlines
+            .replace(/\r/g, "\\r") // Properly escape carriage returns
+            .replace(/\t/g, "\\t"); // Properly escape tabs
+
+          try {
+            parsedResponse = JSON.parse(jsonStr);
+          } catch (cleanedParseError) {
+            console.error("Failed to parse both original and cleaned JSON", {
+              originalError: originalParseError,
+              cleanedError: cleanedParseError,
+            });
+            throw cleanedParseError;
+          }
+        }
+      } else {
+        throw new Error("No JSON object found in response");
       }
     } catch (e) {
       console.warn("Failed to parse JSON response", e);
+      // Provide a default structure based on the analysis type
+      parsedResponse =
+        type === "OPPORTUNITY"
+          ? {
+              technicalScore: 0,
+              marketContextScore: 0,
+              riskScore: 0,
+              overallScore: 0,
+              confidence: 0,
+              explanation:
+                "Failed to parse analysis results. Please try again.",
+              timeframeRecommendations: {
+                shouldCheckOther: false,
+                suggestedTimeframes: [],
+                reason: "Analysis parsing failed",
+              },
+            }
+          : {
+              currentPosition: {
+                status: "BREAKEVEN",
+                riskLevel: "MEDIUM",
+                suggestedAction: "HOLD",
+              },
+              psychologyCheck: {
+                emotionalState: "Unable to analyze",
+                biasWarnings: ["Analysis parsing failed"],
+                recommendations: ["Please try the analysis again"],
+              },
+            };
     }
 
     // Record initial feedback
@@ -225,7 +314,29 @@ Additional considerations:
         category: k.category,
         similarity: k.similarity,
       })),
+      timestamp: new Date().toISOString(),
     };
+
+    // Store analysis in session if provided
+    if (sessionId) {
+      await prisma.analysis.create({
+        data: {
+          sessionId,
+          type,
+          prompt,
+          image,
+          result: JSON.parse(
+            JSON.stringify(analysisResponse),
+          ) as Prisma.JsonObject,
+        },
+      });
+
+      // Update session timestamp
+      await prisma.analysisSession.update({
+        where: { id: sessionId },
+        data: { updatedAt: new Date() },
+      });
+    }
 
     return NextResponse.json(analysisResponse);
   } catch (error) {

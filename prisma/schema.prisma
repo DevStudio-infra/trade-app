@@ -265,3 +265,31 @@ model KnowledgeUsageMetrics {
   @@index([usageCount])
   @@map("knowledge_usage_metrics")
 }
+
+model AnalysisSession {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Analysis history within this session
+  analyses Analysis[]
+
+  @@index([userId])
+}
+
+model Analysis {
+  id        String          @id @default(uuid())
+  sessionId String
+  session   AnalysisSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Analysis data
+  type      String // "OPPORTUNITY" or "GUIDANCE"
+  prompt    String   @db.Text
+  image     String   @db.Text // Base64 image data
+  result    Json // Analysis result
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+}

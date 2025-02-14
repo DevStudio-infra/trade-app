@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -89,6 +90,7 @@ export function AnalysisForm({
                         ? "Analyze this chart for potential trading opportunities..."
                         : "I'm in a long position from 1.2345, should I..."
                     }
+                    disabled={isLoading}
                     {...field}
                   />
                 </FormControl>
@@ -101,7 +103,14 @@ export function AnalysisForm({
             className={cn("w-full", image ? "opacity-100" : "opacity-50")}
             disabled={!image || isLoading}
           >
-            {isLoading ? "Analyzing..." : "Analyze Chart"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              "Analyze Chart"
+            )}
           </Button>
         </form>
       </Form>

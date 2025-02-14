@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { HelpCircle } from "lucide-react";
+import { Clock, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -16,6 +16,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AnalysisForm } from "@/components/copilot/analysis-form";
+import { SessionHistory } from "@/components/copilot/session-history";
+import { SessionManager } from "@/components/copilot/session-manager";
 import {
   WindowCapture,
   WindowCaptureRef,
@@ -50,6 +52,7 @@ interface AnalysisResult {
   guidance?: TradeGuidance;
   analysis: string;
   context: Array<{ id: string; category: string; similarity: number }>;
+  timestamp: string;
 }
 
 function CircularScore({
@@ -117,6 +120,53 @@ function CircularScore({
   );
 }
 
+function getRelativeTime(isoString: string) {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  return `${Math.floor(diffInSeconds / 86400)}d ago`;
+}
+
+function formatTime(date: Date) {
+  return date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function TimestampDisplay({ timestamp }: { timestamp: string }) {
+  const [relativeTime, setRelativeTime] = useState(getRelativeTime(timestamp));
+
+  // Update relative time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRelativeTime(getRelativeTime(timestamp));
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [timestamp]);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="size-3" />
+            <span>{relativeTime}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Analyzed on {new Date(timestamp).toLocaleString()}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export function CopilotContent() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -129,6 +179,7 @@ export function CopilotContent() {
   } | null>(null);
   const [autoAnalysisEnabled, setAutoAnalysisEnabled] = useState(true);
   const [lastAnalysisTime, setLastAnalysisTime] = useState<Date | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const windowCaptureRef = useRef<WindowCaptureRef>(null);
 
   const handleCapture = async (screenshot: string) => {
@@ -157,6 +208,7 @@ export function CopilotContent() {
           image: capturedImage,
           prompt,
           type,
+          sessionId: currentSessionId,
         }),
       });
 
@@ -176,15 +228,9 @@ export function CopilotContent() {
     }
   };
 
-  // Function to format relative time
-  const getRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return `${diffInSeconds}s`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
-    return `${Math.floor(diffInSeconds / 86400)}d`;
+  const handleAnalysisSelect = (analysis: any) => {
+    setAnalysisResult(analysis.result);
+    setLastAnalysisTime(new Date(analysis.createdAt));
   };
 
   const renderMetricWithTooltip = (
@@ -412,153 +458,188 @@ export function CopilotContent() {
         <DashboardHeader
           heading="Trading Copilot"
           text="Lock your trading chart window and get instant AI-powered analysis."
-        />
+        >
+          <SessionManager
+            currentSessionId={currentSessionId}
+            onSessionChange={setCurrentSessionId}
+          />
+        </DashboardHeader>
 
-        <div className="space-y-6">
-          {/* Chart Window Section */}
-          <Card className="border-dashed">
-            <CardContent className="pt-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {lastPrompt && (
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            "size-2 rounded-full",
-                            autoAnalysisEnabled
-                              ? "bg-green-500"
-                              : "bg-yellow-500",
-                            isAnalyzing && "animate-pulse",
-                          )}
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {autoAnalysisEnabled
-                            ? "Auto-analysis active"
-                            : "Auto-analysis paused"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  {lastPrompt && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setAutoAnalysisEnabled(!autoAnalysisEnabled)
-                      }
-                      className={cn(
-                        "text-sm",
-                        !autoAnalysisEnabled && "text-muted-foreground",
-                      )}
-                    >
-                      {autoAnalysisEnabled
-                        ? "Pause Auto-Analysis"
-                        : "Resume Auto-Analysis"}
-                    </Button>
-                  )}
-                </div>
-                <WindowCapture
-                  ref={windowCaptureRef}
-                  onCapture={handleCapture}
-                  className="w-full"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Analysis Section */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-xl font-semibold">
-                    Analysis
-                  </CardTitle>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="size-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs text-sm">
-                          Choose between analyzing new trading opportunities or
-                          getting guidance for active trades. Analysis will
-                          auto-update with each new capture.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                {lastAnalysisTime && (
-                  <p className="text-sm text-muted-foreground">
-                    Last updated {getRelativeTime(lastAnalysisTime)} ago
-                  </p>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <AnalysisForm
-                image={capturedImage}
-                onSubmit={handleAnalysis}
-                isLoading={isAnalyzing}
-              />
-
-              {analysisResult && (
-                <div className="relative space-y-6">
-                  {isAnalyzing && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
-                      <div className="flex items-center gap-2 rounded-full bg-background px-4 py-2 shadow-lg">
-                        <div className="size-2 animate-pulse rounded-full bg-primary" />
-                        <p className="text-sm">Updating analysis...</p>
-                      </div>
-                    </div>
-                  )}
-                  {analysisResult.type === "OPPORTUNITY" && analysisResult.score
-                    ? renderOpportunityScore(analysisResult.score)
-                    : null}
-                  {analysisResult.type === "GUIDANCE" && analysisResult.guidance
-                    ? renderTradeGuidance(analysisResult.guidance)
-                    : null}
-                  <div className="space-y-2">
+        <div className="grid gap-6 md:grid-cols-[1fr,300px]">
+          <div className="space-y-6">
+            {/* Chart Window Section */}
+            <Card className="border-dashed">
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        Knowledge Context
-                      </h3>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <HelpCircle className="size-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs text-sm">
-                              Trading knowledge used to inform the analysis,
-                              with similarity scores showing relevance
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {analysisResult.context.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-full bg-primary/10 px-3 py-1 text-xs"
-                        >
-                          <span className="font-medium text-primary">
-                            {item.category}
-                          </span>
-                          <span className="ml-1 text-muted-foreground">
-                            {(item.similarity * 100).toFixed(0)}%
+                      {lastPrompt && (
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn(
+                              "size-2 rounded-full",
+                              autoAnalysisEnabled
+                                ? "bg-green-500"
+                                : "bg-yellow-500",
+                              isAnalyzing && "animate-pulse",
+                            )}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {autoAnalysisEnabled
+                              ? "Auto-analysis active"
+                              : "Auto-analysis paused"}
                           </span>
                         </div>
-                      ))}
+                      )}
+                    </div>
+                    {lastPrompt && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setAutoAnalysisEnabled(!autoAnalysisEnabled)
+                        }
+                        className={cn(
+                          "text-sm",
+                          !autoAnalysisEnabled && "text-muted-foreground",
+                        )}
+                      >
+                        {autoAnalysisEnabled
+                          ? "Pause Auto-Analysis"
+                          : "Resume Auto-Analysis"}
+                      </Button>
+                    )}
+                  </div>
+                  <WindowCapture
+                    ref={windowCaptureRef}
+                    onCapture={handleCapture}
+                    className="w-full"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Analysis Section */}
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-xl font-semibold">
+                      Analysis
+                    </CardTitle>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="size-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs text-sm">
+                            Choose between analyzing new trading opportunities
+                            or getting guidance for active trades. Analysis will
+                            auto-update with each new capture.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  {lastAnalysisTime && (
+                    <p className="text-sm text-muted-foreground">
+                      Last updated {formatTime(lastAnalysisTime)}
+                    </p>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <AnalysisForm
+                  image={capturedImage}
+                  onSubmit={handleAnalysis}
+                  isLoading={isAnalyzing}
+                />
+
+                {analysisResult && (
+                  <div className="relative space-y-6">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {isAnalyzing && (
+                          <div className="flex items-center gap-2">
+                            <div className="size-2 animate-pulse rounded-full bg-primary" />
+                            <span className="text-sm">
+                              Updating analysis...
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <TimestampDisplay timestamp={analysisResult.timestamp} />
+                    </div>
+
+                    {isAnalyzing && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
+                        <div className="flex items-center gap-2 rounded-full bg-background px-4 py-2 shadow-lg">
+                          <div className="size-2 animate-pulse rounded-full bg-primary" />
+                          <p className="text-sm">Updating analysis...</p>
+                        </div>
+                      </div>
+                    )}
+                    {analysisResult.type === "OPPORTUNITY" &&
+                    analysisResult.score
+                      ? renderOpportunityScore(analysisResult.score)
+                      : null}
+                    {analysisResult.type === "GUIDANCE" &&
+                    analysisResult.guidance
+                      ? renderTradeGuidance(analysisResult.guidance)
+                      : null}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Knowledge Context
+                        </h3>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <HelpCircle className="size-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs text-sm">
+                                Trading knowledge used to inform the analysis,
+                                with similarity scores showing relevance
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {analysisResult.context.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-full bg-primary/10 px-3 py-1 text-xs"
+                          >
+                            <span className="font-medium text-primary">
+                              {item.category}
+                            </span>
+                            <span className="ml-1 text-muted-foreground">
+                              {(item.similarity * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Session History Sidebar */}
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <SessionHistory
+                  sessionId={currentSessionId}
+                  onAnalysisSelect={handleAnalysisSelect}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </TooltipProvider>
