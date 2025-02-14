@@ -75,7 +75,8 @@ model User {
   stripePriceId          String?   @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
 
-  AICredit AICredit?
+  AICredit    AICredit?
+  RAGFeedback RAGFeedback[]
 
   @@map(name: "users")
 }
@@ -215,4 +216,52 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+model TradingKnowledgeEmbedding {
+  id        String                     @id @default(uuid())
+  content   String                     @unique @db.Text
+  embedding Unsupported("vector(768)")
+  metadata  Json
+  category  String // e.g., "PATTERN", "PSYCHOLOGY", "RISK_MANAGEMENT"
+  tags      String[] // For efficient filtering
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+
+  // Add relation to usage metrics
+  usageMetrics KnowledgeUsageMetrics?
+
+  @@index([category])
+  @@index([tags])
+  @@map("trading_knowledge_embeddings")
+}
+
+model RAGFeedback {
+  id                   String   @id @default(uuid())
+  userId               String
+  queryText            String   @db.Text
+  selectedKnowledge    String[]
+  isRelevant           Boolean
+  feedbackText         String?  @db.Text
+  suggestedImprovement String?  @db.Text
+  createdAt            DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRelevant])
+  @@map("rag_feedback")
+}
+
+model KnowledgeUsageMetrics {
+  knowledgeId    String   @id
+  usageCount     Int      @default(0)
+  relevanceScore Float    @default(0)
+  lastUsed       DateTime @default(now())
+
+  knowledge TradingKnowledgeEmbedding @relation(fields: [knowledgeId], references: [id], onDelete: Cascade)
+
+  @@index([relevanceScore])
+  @@index([usageCount])
+  @@map("knowledge_usage_metrics")
 }

@@ -8,8 +8,9 @@ export const marketingConfig: MarketingConfig = {
     },
     {
       title: "Blog",
-      href: "/blog",
+      href: "#",
       badge: "soon",
+      disabled: true,
     },
     {
       title: "Contact",

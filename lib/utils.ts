@@ -39,7 +39,7 @@ export function constructMetadata({
     ],
     authors: [
       {
-        name: "mickasmt",
+        name: "Raphael Malburg",
       },
     ],
     creator: "mickasmt",

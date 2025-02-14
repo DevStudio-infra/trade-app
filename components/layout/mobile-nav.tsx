@@ -10,6 +10,7 @@ import { docsConfig } from "@/config/docs";
 import { marketingConfig } from "@/config/marketing";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { DocsSidebarNav } from "@/components/docs/sidebar-nav";
 import { Icons } from "@/components/shared/icons";
 
@@ -60,17 +61,30 @@ export function NavMobile() {
         )}
       >
         <ul className="grid divide-y divide-muted">
-          {links && links.length > 0 && links.map(({ title, href }) => (
-            <li key={href} className="py-3">
-              <Link
-                href={href}
-                onClick={() => setOpen(false)}
-                className="flex w-full font-medium capitalize"
-              >
-                {title}
-              </Link>
-            </li>
-          ))}
+          {links &&
+            links.length > 0 &&
+            links.map(({ title, href, disabled, badge }) => (
+              <li key={href} className="py-3">
+                <Link
+                  href={disabled ? "#" : href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex w-full items-center font-medium capitalize",
+                    disabled && "cursor-not-allowed opacity-80",
+                  )}
+                >
+                  {title}
+                  {badge && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 rounded-md px-1.5 py-0.5 font-normal"
+                    >
+                      {badge}
+                    </Badge>
+                  )}
+                </Link>
+              </li>
+            ))}
 
           {session ? (
             <>
