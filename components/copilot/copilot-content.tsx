@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AnalysisForm } from "@/components/copilot/analysis-form";
+import { CopilotWalkthrough } from "@/components/copilot/copilot-walkthrough";
 import { SessionHistory } from "@/components/copilot/session-history";
 import { SessionManager } from "@/components/copilot/session-manager";
 import {
@@ -459,10 +460,12 @@ export function CopilotContent() {
           heading="Trading Copilot"
           text="Lock your trading chart window and get instant AI-powered analysis."
         >
-          <SessionManager
-            currentSessionId={currentSessionId}
-            onSessionChange={setCurrentSessionId}
-          />
+          <div id="session-manager">
+            <SessionManager
+              currentSessionId={currentSessionId}
+              onSessionChange={setCurrentSessionId}
+            />
+          </div>
         </DashboardHeader>
 
         <div className="grid gap-6 md:grid-cols-[1fr,300px]">
@@ -474,7 +477,10 @@ export function CopilotContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {lastPrompt && (
-                        <div className="flex items-center gap-2">
+                        <div
+                          id="auto-analysis"
+                          className="flex items-center gap-2"
+                        >
                           <div
                             className={cn(
                               "size-2 rounded-full",
@@ -492,29 +498,22 @@ export function CopilotContent() {
                         </div>
                       )}
                     </div>
-                    {lastPrompt && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setAutoAnalysisEnabled(!autoAnalysisEnabled)
-                        }
-                        className={cn(
-                          "text-sm",
-                          !autoAnalysisEnabled && "text-muted-foreground",
-                        )}
-                      >
-                        {autoAnalysisEnabled
-                          ? "Pause Auto-Analysis"
-                          : "Resume Auto-Analysis"}
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setAutoAnalysisEnabled(!autoAnalysisEnabled)
+                      }
+                    >
+                      {autoAnalysisEnabled ? "Pause" : "Resume"} Auto-analysis
+                    </Button>
                   </div>
-                  <WindowCapture
-                    ref={windowCaptureRef}
-                    onCapture={handleCapture}
-                    className="w-full"
-                  />
+                  <div id="chart-window">
+                    <WindowCapture
+                      ref={windowCaptureRef}
+                      onCapture={handleCapture}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -550,11 +549,13 @@ export function CopilotContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <AnalysisForm
-                  image={capturedImage}
-                  onSubmit={handleAnalysis}
-                  isLoading={isAnalyzing}
-                />
+                <div id="analysis-form">
+                  <AnalysisForm
+                    image={capturedImage}
+                    onSubmit={handleAnalysis}
+                    isLoading={isAnalyzing}
+                  />
+                </div>
 
                 {analysisResult && (
                   <div className="relative space-y-6">
@@ -633,15 +634,18 @@ export function CopilotContent() {
           <div className="space-y-6">
             <Card>
               <CardContent className="pt-6">
-                <SessionHistory
-                  sessionId={currentSessionId}
-                  onAnalysisSelect={handleAnalysisSelect}
-                />
+                <div id="session-history">
+                  <SessionHistory
+                    sessionId={currentSessionId}
+                    onAnalysisSelect={handleAnalysisSelect}
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+      <CopilotWalkthrough />
     </TooltipProvider>
   );
 }
