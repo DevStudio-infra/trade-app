@@ -12,6 +12,8 @@ declare module "next-auth" {
     user: {
       id: string;
       role: UserRole;
+      hasAcceptedToS: boolean;
+      hasAcceptedPrivacy: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -27,32 +29,38 @@ export const {
     // error: "/auth/error",
   },
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (!user.email) {
         return false;
       }
 
       try {
         const username = user.email.split("@")[0];
-        const updatedUser = await prisma.user.upsert({
+        const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
-          create: {
+          select: { id: true, hasAcceptedToS: true },
+        });
+
+        if (existingUser) {
+          // For existing users, just return true
+          return true;
+        }
+
+        // For new users, create with terms acceptance if provided
+        const updatedUser = await prisma.user.create({
+          data: {
             email: user.email,
             name: user.name || username,
             image:
               user.image ||
               `https://ui-avatars.com/api/?name=${username}&background=random`,
-          },
-          update: {
-            name: user.name || username,
-            image:
-              user.image ||
-              `https://ui-avatars.com/api/?name=${username}&background=random`,
+            hasAcceptedToS: true, // Set to true for new registrations
           },
         });
 
         return true;
       } catch (error) {
+        console.error("[AUTH_ERROR]", error);
         return false;
       }
     },
@@ -68,6 +76,12 @@ export const {
 
       if (token.role) {
         session.user.role = token.role;
+      }
+
+      if (typeof token.hasAcceptedToS === "boolean") {
+        session.user.hasAcceptedToS = token.hasAcceptedToS;
+      } else {
+        session.user.hasAcceptedToS = false; // Default to false if not set
       }
 
       session.user.name = token.name;
@@ -99,6 +113,7 @@ export const {
         token.email = dbUser.email;
         token.picture = dbUser.image;
         token.role = dbUser.role;
+        token.hasAcceptedToS = dbUser.hasAcceptedToS;
 
         return token;
       } catch (error) {

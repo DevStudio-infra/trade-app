@@ -13,21 +13,21 @@ export const MagicLinkEmail = ({
   mailType,
   siteName,
 }: MagicLinkEmailProps) => {
-  const subject = mailType === "login"
-    ? `Sign in to your ${siteName} account`
-    : `Welcome to ${siteName} - Activate your account`;
+  const subject =
+    mailType === "login"
+      ? `Sign in to your ${siteName} account`
+      : `Welcome to ${siteName} - Activate your account`;
 
-  const welcomeText = mailType === "login"
-    ? "Welcome back!"
-    : "Welcome to Trade Tracker!";
+  const welcomeText =
+    mailType === "login" ? "Welcome back!" : "Welcome to Trade Tracker!";
 
-  const actionText = mailType === "login"
-    ? "Use the button below to sign in to your account."
-    : "Thanks for signing up! Please verify your email address to get started.";
+  const actionText =
+    mailType === "login"
+      ? "Use the button below to sign in to your account."
+      : "Thanks for signing up! Please verify your email address to get started.";
 
-  const buttonText = mailType === "login"
-    ? "Sign in to your account"
-    : "Verify your email";
+  const buttonText =
+    mailType === "login" ? "Sign in to your account" : "Verify your email";
 
   return {
     subject,
@@ -68,11 +68,15 @@ export const MagicLinkEmail = ({
         This link expires in 24 hours and can only be used once.
       </p>
 
-      ${mailType === "login" ? `
+      ${
+        mailType === "login"
+          ? `
       <p style="color: #6B7280; font-size: 14px;">
         If you did not request this email, you can safely ignore it.
       </p>
-      ` : ''}
+      `
+          : ""
+      }
 
       <hr style="margin: 24px 0; border: 0; border-top: 2px solid #F3F4F6;">
 
@@ -92,8 +96,8 @@ Click here to ${buttonText.toLowerCase()}: ${actionUrl}
 
 This link expires in 24 hours and can only be used once.
 
-${mailType === "login" ? 'If you did not request this email, you can safely ignore it.\n' : ''}
+${mailType === "login" ? "If you did not request this email, you can safely ignore it.\n" : ""}
 
-Powered by ${siteName}`
+Powered by ${siteName}`,
   };
 };

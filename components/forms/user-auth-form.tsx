@@ -1,25 +1,27 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 import { cn } from "@/lib/utils";
-import { userAuthSchema } from "@/lib/validations/auth";
+import { userAuthSchema, userRegisterSchema } from "@/lib/validations/auth";
 import { buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { Icons } from "@/components/shared/icons";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: string;
 }
 
-type FormData = z.infer<typeof userAuthSchema>;
+type FormData = z.infer<typeof userRegisterSchema>;
 
 export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   const {
@@ -27,7 +29,9 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(userAuthSchema),
+    resolver: zodResolver(
+      type === "register" ? userRegisterSchema : userAuthSchema,
+    ),
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
@@ -38,6 +42,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
 
     const signInResult = await signIn("resend", {
       email: data.email.toLowerCase(),
+      acceptTerms: data.acceptTerms,
       redirect: false,
       callbackUrl: searchParams?.get("from") || "/dashboard",
     });
@@ -46,7 +51,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
 
     if (!signInResult?.ok) {
       return toast.error("Something went wrong.", {
-        description: "Your sign in request failed. Please try again."
+        description: "Your sign in request failed. Please try again.",
       });
     }
 
@@ -79,6 +84,25 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               </p>
             )}
           </div>
+          {type === "register" && (
+            <div className="flex items-center space-x-2">
+              <Checkbox id="terms" {...register("acceptTerms")} />
+              <Label htmlFor="terms" className="text-sm text-muted-foreground">
+                I accept the{" "}
+                <Link
+                  href="/terms"
+                  className="underline underline-offset-4 hover:text-primary"
+                >
+                  terms and conditions
+                </Link>
+              </Label>
+              {errors?.acceptTerms && (
+                <p className="px-1 text-xs text-red-600">
+                  {errors.acceptTerms.message}
+                </p>
+              )}
+            </div>
+          )}
           <button className={cn(buttonVariants())} disabled={isLoading}>
             {isLoading && (
               <Icons.spinner className="mr-2 size-4 animate-spin" />

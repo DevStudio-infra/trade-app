@@ -2,7 +2,8 @@
 
 import { createContext, Dispatch, ReactNode, SetStateAction } from "react";
 
-import { useSignInModal } from "@/components/modals//sign-in-modal";
+import { useSignInModal } from "@/components/modals/sign-in-modal";
+import { TermsAcceptanceProvider } from "@/components/providers/terms-acceptance-provider";
 
 export const ModalContext = createContext<{
   setShowSignInModal: Dispatch<SetStateAction<boolean>>;
@@ -20,7 +21,7 @@ export default function ModalProvider({ children }: { children: ReactNode }) {
       }}
     >
       <SignInModal />
-      {children}
+      <TermsAcceptanceProvider>{children}</TermsAcceptanceProvider>
     </ModalContext.Provider>
   );
 }
