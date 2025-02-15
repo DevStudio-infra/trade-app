@@ -18,9 +18,6 @@ export const sendVerificationRequest: EmailConfig["sendVerificationRequest"] =
     }
 
     const userVerified = user?.emailVerified ? true : false;
-    const authSubject = userVerified
-      ? `Sign-in link for ${siteConfig.name}`
-      : "Activate your account";
 
     // Allow list for development testing
     const allowedTestEmails = [
@@ -35,16 +32,19 @@ export const sendVerificationRequest: EmailConfig["sendVerificationRequest"] =
         : identifier;
 
     try {
+      const emailContent = MagicLinkEmail({
+        firstName: user?.name as string,
+        actionUrl: url,
+        mailType: userVerified ? "login" : "register",
+        siteName: siteConfig.name,
+      });
+
       const { data, error } = await resend.emails.send({
         from: provider.from,
         to: emailRecipient,
-        subject: authSubject,
-        react: MagicLinkEmail({
-          firstName: user?.name as string,
-          actionUrl: url,
-          mailType: userVerified ? "login" : "register",
-          siteName: siteConfig.name,
-        }),
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text,
         // Set this to prevent Gmail from threading emails.
         // More info: https://resend.com/changelog/custom-email-headers
         headers: {
