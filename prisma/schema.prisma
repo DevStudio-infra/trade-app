@@ -89,13 +89,15 @@ model VerificationToken {
 }
 
 model AICredit {
-  id           String                @id @default(cuid())
-  userId       String                @unique
-  balance      Float                 @default(0)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions AICreditTransaction[]
+  id                 String                @id @default(cuid())
+  userId             String                @unique
+  balance            Float                 @default(0)
+  lastRefreshDate    DateTime?
+  hasPurchaseHistory Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions       AICreditTransaction[]
 
   @@map(name: "ai_credits")
 }
@@ -120,6 +122,9 @@ enum TransactionType {
   USAGE
   REFUND
   SUBSCRIPTION_BONUS
+  MONTHLY_REFRESH
+  MONTHLY_RESET
+  MONTHLY_TOPUP
 }
 
 enum TransactionStatus {
