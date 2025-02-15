@@ -242,7 +242,7 @@ const SignalIndicator = () => {
         >
           <span className="font-medium text-sky-400">{signal}</span>
           <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-green-400">
-            {75 + Math.floor(Math.random() * 20)}%
+            85%
           </span>
         </motion.div>
       ))}

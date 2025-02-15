@@ -43,7 +43,7 @@ export type DocsConfig = {
   sidebarNav: SidebarNavItem[];
 };
 
-// subcriptions
+// subscriptions
 export type SubscriptionPlan = {
   title: string;
   description: string;
@@ -57,6 +57,7 @@ export type SubscriptionPlan = {
     monthly: string | null;
     yearly: string | null;
   };
+  badge?: string;
 };
 
 export type UserSubscriptionPlan = SubscriptionPlan &
@@ -65,12 +66,14 @@ export type UserSubscriptionPlan = SubscriptionPlan &
     isPaid: boolean;
     interval: "month" | "year" | null;
     isCanceled?: boolean;
+    usageCount?: number;
+    creditsRemaining?: number;
   };
 
 // compare plans
 export type ColumnType = string | boolean | null;
 export type PlansRow = { feature: string; tooltip?: string } & {
-  [key in (typeof plansColumns)[number]]: ColumnType;
+  [key in "free" | "pro" | "enterprise"]: ColumnType;
 };
 
 // landing sections
