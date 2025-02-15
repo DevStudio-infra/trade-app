@@ -9,6 +9,16 @@ const CRON_API_KEY = env.CRON_JOB_API_KEY;
 const FREE_TIER_CREDITS = 6;
 const PAID_TIER_CREDITS = 100;
 
+type CreditRefreshResult = {
+  userId: string;
+  action: TransactionType | "CREATED" | "ERROR";
+  newBalance?: number;
+  previousBalance?: number;
+  creditsAdded?: number;
+  error?: string;
+  details?: string;
+};
+
 export async function POST(req: Request) {
   try {
     // Verify the request is from cron-job.org
@@ -33,7 +43,7 @@ export async function POST(req: Request) {
       },
     });
 
-    const results = [];
+    const results: CreditRefreshResult[] = [];
 
     // Process each user
     for (const user of users) {
@@ -77,7 +87,7 @@ export async function POST(req: Request) {
           userCredits.hasPurchaseHistory || userCredits.transactions.length > 0;
 
         let newBalance = userCredits.balance;
-        let transactionType = TransactionType.MONTHLY_REFRESH;
+        let transactionType: TransactionType = TransactionType.MONTHLY_REFRESH;
         let amount = 0;
 
         if (isPaidUser) {
@@ -143,6 +153,7 @@ export async function POST(req: Request) {
       } catch (error) {
         results.push({
           userId: user.id,
+          action: "ERROR",
           error: "Failed to process user",
           details: error instanceof Error ? error.message : "Unknown error",
         });
