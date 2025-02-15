@@ -15,27 +15,14 @@ export const metadata: Metadata = {
 };
 
 export default async function CreditsPage() {
-  console.log("[CREDITS] Page render started");
-
   const user = await getCurrentUser();
-  console.log("[CREDITS] User check:", {
-    exists: !!user,
-    id: user?.id,
-    email: user?.email,
-  });
 
   if (!user || !user.id) {
-    console.log("[CREDITS] No user found, redirecting to login");
     redirect("/login");
   }
 
   try {
-    console.log("[CREDITS] Fetching subscription plan for user:", user.id);
     const subscriptionPlan = await getUserSubscriptionPlan(user.id);
-    console.log("[CREDITS] Subscription plan loaded:", {
-      isPaid: subscriptionPlan.isPaid,
-      planType: subscriptionPlan.title,
-    });
 
     return (
       <div className="space-y-6">
@@ -58,7 +45,6 @@ export default async function CreditsPage() {
       </div>
     );
   } catch (error) {
-    console.error("[CREDITS] Error loading credits page:", error);
     throw error;
   }
 }

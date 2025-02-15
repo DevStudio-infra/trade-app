@@ -14,27 +14,14 @@ export const metadata = constructMetadata({
 });
 
 export default async function BillingPage() {
-  console.log("[BILLING] Page render started");
-
   const user = await getCurrentUser();
-  console.log("[BILLING] User check:", {
-    exists: !!user,
-    id: user?.id,
-    email: user?.email,
-  });
 
   if (!user || !user.id) {
-    console.log("[BILLING] No user found, redirecting to login");
     redirect("/login");
   }
 
   try {
-    console.log("[BILLING] Fetching subscription plan for user:", user.id);
     const userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
-    console.log("[BILLING] Subscription plan loaded:", {
-      isPaid: userSubscriptionPlan.isPaid,
-      planType: userSubscriptionPlan.title,
-    });
 
     return (
       <>
@@ -65,7 +52,6 @@ export default async function BillingPage() {
       </>
     );
   } catch (error) {
-    console.error("[BILLING] Error loading billing page:", error);
     throw error;
   }
 }

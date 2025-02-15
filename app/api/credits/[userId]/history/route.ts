@@ -8,19 +8,13 @@ export async function GET(
   { params }: { params: { userId: string } },
 ) {
   try {
-    console.log("[CREDITS_HISTORY] Request started for user:", params.userId);
     const user = await getCurrentUser();
 
     if (!user) {
-      console.log("[CREDITS_HISTORY] No authenticated user found");
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     if (user.id !== params.userId) {
-      console.log("[CREDITS_HISTORY] User ID mismatch:", {
-        sessionUserId: user.id,
-        requestedUserId: params.userId,
-      });
       return new NextResponse("Forbidden", { status: 403 });
     }
 
@@ -32,7 +26,6 @@ export async function GET(
     });
 
     if (!creditRecord) {
-      console.log("[CREDITS_HISTORY] No credit record found for user");
       return NextResponse.json({ transactions: [] });
     }
 
@@ -53,12 +46,6 @@ export async function GET(
       },
     });
 
-    console.log("[CREDITS_HISTORY] Found transactions:", {
-      count: transactions.length,
-      userId: params.userId,
-      creditId: creditRecord.id,
-    });
-
     return NextResponse.json({
       transactions: transactions.map((tx) => ({
         ...tx,
@@ -66,7 +53,6 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("[CREDITS_HISTORY] Error:", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

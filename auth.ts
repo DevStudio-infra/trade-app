@@ -28,15 +28,7 @@ export const {
   },
   callbacks: {
     async signIn({ user, account }) {
-      console.log("[AUTH] Sign in attempt:", {
-        email: user.email,
-        provider: account?.provider,
-        hasName: !!user.name,
-        hasImage: !!user.image,
-      });
-
       if (!user.email) {
-        console.log("[AUTH] Sign in failed: No email provided");
         return false;
       }
 
@@ -59,29 +51,15 @@ export const {
           },
         });
 
-        console.log("[AUTH] User upserted successfully:", {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          name: updatedUser.name,
-        });
-
         return true;
       } catch (error) {
-        console.error("[AUTH] Error during sign in:", error);
         return false;
       }
     },
 
     async session({ token, session }) {
-      console.log("[AUTH] Session callback - Token:", {
-        sub: token.sub,
-        email: token.email,
-        name: token.name,
-      });
-
       if (token.sub) {
         session.user.id = token.sub;
-        console.log("[AUTH] Setting user ID in session:", token.sub);
       }
 
       if (token.email) {
@@ -95,52 +73,25 @@ export const {
       session.user.name = token.name;
       session.user.image = token.picture;
 
-      console.log("[AUTH] Final session user:", {
-        id: session.user.id,
-        email: session.user.email,
-        role: session.user.role,
-      });
-
       return session;
     },
 
-    async jwt({ token, user, account, trigger }) {
-      console.log("[AUTH] JWT callback - Initial token:", {
-        sub: token.sub,
-        email: token.email,
-        trigger,
-        hasUser: !!user,
-      });
-
+    async jwt({ token, user }) {
       if (user) {
-        // Always set these values when we have a user object
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
         token.picture = user.image;
-        console.log("[AUTH] JWT callback - Updated token with user data:", {
-          sub: token.sub,
-          email: token.email,
-        });
       }
 
       if (!token.sub) {
-        console.log("[AUTH] JWT callback - No user ID in token");
         return token;
       }
 
       try {
         const dbUser = await getUserById(token.sub);
-        console.log("[AUTH] JWT callback - DB User found:", {
-          id: dbUser?.id,
-          email: dbUser?.email,
-        });
 
         if (!dbUser) {
-          console.log(
-            "[AUTH] JWT callback - No DB user found for ID:",
-            token.sub,
-          );
           return token;
         }
 
@@ -149,15 +100,8 @@ export const {
         token.picture = dbUser.image;
         token.role = dbUser.role;
 
-        console.log("[AUTH] JWT callback - Final token:", {
-          sub: token.sub,
-          email: token.email,
-          name: token.name,
-        });
-
         return token;
       } catch (error) {
-        console.error("[AUTH] JWT callback - Error:", error);
         return token;
       }
     },
