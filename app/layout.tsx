@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { cn, constructMetadata } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@/components/analytics";
+import { CookieConsent } from "@/components/cookie-consent";
 import ModalProvider from "@/components/modals/providers";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           >
             <ModalProvider>{children}</ModalProvider>
             <Analytics />
+            <CookieConsent />
             <Toaster richColors closeButton />
             <TailwindIndicator />
           </ThemeProvider>

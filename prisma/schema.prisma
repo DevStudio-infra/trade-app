@@ -65,10 +65,8 @@ model User {
   hasCompletedOnboarding Boolean   @default(false)
   hasAcceptedToS         Boolean   @default(false)
 
-  accounts        Account[]
-  sessions        Session[]
-  ChartAnalysis   ChartAnalysis[]
-  UserPreferences UserPreferences?
+  accounts Account[]
+  sessions Session[]
 
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
@@ -88,93 +86,6 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map(name: "verification_tokens")
-}
-
-model TradingPattern {
-  id                String                       @id @default(cuid())
-  name              String                       @unique
-  description       String
-  type              PatternType
-  timeframes        String[]
-  reliability       Float
-  conditions        Json
-  examples          String[]
-  signals           Json
-  embedding         Unsupported("vector(1536)")?
-  createdAt         DateTime                     @default(now())
-  updatedAt         DateTime                     @updatedAt
-  successRate       Float?
-  failureConditions String[]
-  timeframeBias     String[]
-
-  @@index([type])
-}
-
-model TradingPrinciple {
-  id          String                       @id @default(cuid())
-  name        String                       @unique
-  category    PrincipleCategory
-  description String
-  rules       Json
-  examples    Json
-  importance  Int
-  context     String[]
-  warnings    String[]
-  metrics     Json?
-  embedding   Unsupported("vector(1536)")?
-  createdAt   DateTime                     @default(now())
-  updatedAt   DateTime                     @updatedAt
-
-  @@index([category])
-}
-
-model UserPreferences {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  theme          String   @default("system")
-  emailMarketing Boolean  @default(false)
-  securityAlerts Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model ChartAnalysis {
-  id         String   @id @default(cuid())
-  userId     String
-  prompt     String
-  imageUrl   String
-  aiResponse String
-  isHelpful  Boolean?
-  createdAt  DateTime @default(now())
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-enum PrincipleCategory {
-  RISK_MANAGEMENT
-  POSITION_SIZING
-  MONEY_MANAGEMENT
-  PSYCHOLOGY
-  TRADE_MANAGEMENT
-  PORTFOLIO_MANAGEMENT
-  RISK_REWARD
-  TRADING_PLAN
-  PERFORMANCE_TRACKING
-}
-
-enum PatternType {
-  CANDLESTICK
-  CHART_PATTERN
-  PRICE_ACTION
-  HARMONIC
-  FIBONACCI
-  TREND
-  VOLATILITY
-  MOMENTUM
-  REVERSAL
-  CONTINUATION
 }
 
 model AICredit {
@@ -292,4 +203,13 @@ model Analysis {
   createdAt DateTime @default(now())
 
   @@index([sessionId])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
 }

@@ -4,51 +4,51 @@
 
 ### 1. Trading Chart Analysis Page (`/dashboard/capture`)
 
-- [ ] Screen capture component
-  - [ ] Window selection functionality
-  - [ ] Screenshot capture and preview
-  - [ ] Error handling and toast notifications
-- [ ] Analysis form
-  - [ ] Text input field for analysis prompt
-  - [ ] Analysis trigger button
-  - [ ] Loading states
-- [ ] Analysis display
-  - [ ] Markdown rendering of AI response
-  - [ ] Proper styling and formatting
-- [ ] Integration with Gemini AI
-  - [ ] Image and text processing
-  - [ ] API route for analysis
-  - [ ] Error handling
+- [x] Screen capture component (Copilot)
+  - [x] Window selection functionality
+  - [x] Screenshot capture and preview
+  - [x] Error handling and toast notifications
+- [x] Analysis form
+  - [x] Text input field for analysis prompt
+  - [x] Analysis trigger button
+  - [x] Loading states
+- [x] Analysis display
+  - [x] Markdown rendering of AI response
+  - [x] Proper styling and formatting
+- [x] Integration with Gemini AI
+  - [x] Image and text processing
+  - [x] API route for analysis
+  - [x] Error handling
 
 ### 2. Credits System
 
-- [ ] Credits management pages
-  - [ ] Credit balance display
-  - [ ] Purchase credits interface
-  - [ ] Credit history table
+- [x] Credits management pages
+  - [x] Credit balance display
+  - [x] Purchase credits interface
+  - [x] Credit history table
 - [x] Credit pricing
-  - [x] Base price: 0.38€ per credit
-  - [x] Minimum purchase: 6€ (~15 credits)
-  - [x] Maximum purchase: 1000€ (~2632 credits)
-  - [x] 20% discount for subscribers
-- [ ] Credit transaction handling
-  - [ ] Purchase flow
-  - [ ] Usage tracking
-  - [ ] Transaction history
+  - [x] Base price: 0.22€ per credit
+  - [x] Minimum purchase: 6€ (~27 credits)
+  - [x] Maximum purchase: 1000€ (~4545 credits)
+  - [x] 40% discount for subscribers
+- [x] Credit transaction handling
+  - [x] Purchase flow
+  - [x] Usage tracking
+  - [x] Transaction history
 
 ### 3. Billing and Subscription
 
 - [x] Subscription plans
   - [x] Free tier (6 credits/month)
   - [x] Pro tier (100 credits/month)
-- [ ] Billing page
-  - [ ] Current plan display
-  - [ ] Upgrade/downgrade options
-  - [ ] Payment history
-- [ ] Stripe integration
-  - [ ] Payment processing
-  - [ ] Webhook handling
-  - [ ] Subscription management
+- [x] Billing page
+  - [x] Current plan display
+  - [x] Upgrade/downgrade options
+  - [x] Payment history
+- [x] Stripe integration
+  - [x] Payment processing
+  - [x] Webhook handling
+  - [x] Subscription management
 
 ### 4. Contact Page
 
@@ -73,70 +73,93 @@
   - [x] Call-to-action buttons
 - [x] FAQ section
 
+## Current Priorities
+
+### 1. Analysis Enhancement (Highest Priority)
+
+- [ ] Add support for multiple timeframes
+- [ ] Implement chart pattern recognition
+- [ ] Add market context analysis
+- [ ] Improve risk assessment calculations
+
+### 2. User Experience Improvements
+
+- [x] Add analysis history view
+- [x] Implement session management
+- [ ] Add export functionality
+- [ ] Improve error messages and feedback
+
+### 3. Performance Optimization
+
+- [ ] Implement caching for analysis results
+- [ ] Optimize image processing
+- [ ] Add loading skeletons
+- [ ] Improve response times
+
 ## Components to Rebuild
 
 ### UI Components
 
-- [ ] Markdown renderer
-  - [ ] Custom styling for different elements
-  - [ ] Code block formatting
-  - [ ] List styling
+- [x] Markdown renderer
+  - [x] Custom styling for different elements
+  - [x] Code block formatting
+  - [x] List styling
 - [ ] Screen capture tool
   - [ ] Window selection UI
   - [ ] Preview component
-- [ ] Credit purchase slider
-  - [ ] Amount selection
-  - [ ] Credit calculation
-  - [ ] Price display
-- [ ] Transaction history table
-  - [ ] Status indicators
-  - [ ] Date formatting
-  - [ ] Type icons
+- [x] Credit purchase slider
+  - [x] Amount selection
+  - [x] Credit calculation
+  - [x] Price display
+- [x] Transaction history table
+  - [x] Status indicators
+  - [x] Date formatting
+  - [x] Type icons
 
 ### Layout Components
 
-- [ ] Dashboard layout
-  - [ ] Sidebar navigation
-  - [ ] Header
-  - [ ] Content area
-- [ ] Marketing layout
-  - [ ] Navigation bar
-  - [ ] Footer
-  - [ ] Page containers
+- [x] Dashboard layout
+  - [x] Sidebar navigation
+  - [x] Header
+  - [x] Content area
+- [x] Marketing layout
+  - [x] Navigation bar
+  - [x] Footer
+  - [x] Page containers
 
 ## API Routes to Implement
 
 ### Analysis
 
-- [ ] `/api/analyze`
-  - [ ] Image processing
-  - [ ] Gemini AI integration
-  - [ ] Credit deduction
+- [x] `/api/analyze`
+  - [x] Image processing
+  - [x] Gemini AI integration
+  - [x] Credit deduction
 
 ### Credits
 
-- [ ] `/api/credits/purchase`
-  - [ ] Stripe integration
-  - [ ] Credit allocation
-- [ ] `/api/credits/history`
-  - [ ] Transaction listing
-  - [ ] Filtering options
+- [x] `/api/credits/purchase`
+  - [x] Stripe integration
+  - [x] Credit allocation
+- [x] `/api/credits/history`
+  - [x] Transaction listing
+  - [x] Filtering options
 
 ### Billing
 
-- [ ] `/api/billing/subscribe`
-  - [ ] Plan management
-  - [ ] Payment processing
-- [ ] `/api/webhooks/stripe`
-  - [ ] Payment confirmation
-  - [ ] Subscription updates
+- [x] `/api/billing/subscribe`
+  - [x] Plan management
+  - [x] Payment processing
+- [x] `/api/webhooks/stripe`
+  - [x] Payment confirmation
+  - [x] Subscription updates
 
 ## Database Schema Updates
 
-- [ ] User credits table
-- [ ] Transaction history
-- [ ] Subscription details
-- [ ] Analysis history
+- [x] User credits table
+- [x] Transaction history
+- [x] Subscription details
+- [x] Analysis history
 
 ## Testing
 
@@ -147,10 +170,10 @@
 
 ## Documentation
 
-- [ ] API documentation
-- [ ] Component documentation
-- [ ] Setup instructions
-- [ ] Environment variables list
+- [x] API documentation
+- [x] Component documentation
+- [x] Setup instructions
+- [x] Environment variables list
 
 ## Design System
 

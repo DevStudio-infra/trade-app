@@ -48,18 +48,25 @@ export default function ProjectSwitcher({
   return (
     <div>
       <Popover open={openPopover} onOpenChange={setOpenPopover}>
-        <PopoverTrigger>
-          <Button
-            className="h-8 px-2"
-            variant={openPopover ? "secondary" : "ghost"}
+        <PopoverTrigger asChild>
+          <div
+            role="button"
+            tabIndex={0}
+            className={cn(
+              buttonVariants({ variant: openPopover ? "secondary" : "ghost" }),
+              "h-8 px-2",
+              "cursor-pointer",
+            )}
             onClick={() => setOpenPopover(!openPopover)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setOpenPopover(!openPopover);
+              }
+            }}
           >
             <div className="flex items-center space-x-3 pr-2">
               <div
-                className={cn(
-                  "size-3 shrink-0 rounded-full",
-                  selected.color,
-                )}
+                className={cn("size-3 shrink-0 rounded-full", selected.color)}
               />
               <div className="flex items-center space-x-3">
                 <span
@@ -76,7 +83,7 @@ export default function ProjectSwitcher({
               className="size-4 text-muted-foreground"
               aria-hidden="true"
             />
-          </Button>
+          </div>
         </PopoverTrigger>
         <PopoverContent align="start" className="max-w-60 p-2">
           <ProjectList
@@ -128,16 +135,23 @@ function ProjectList({
           )}
         </Link>
       ))}
-      <Button
-        variant="outline"
-        className="relative flex h-9 items-center justify-center gap-2 p-2"
-        onClick={() => {
-          setOpenPopover(false);
+      <div
+        role="button"
+        tabIndex={0}
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          "relative flex h-9 cursor-pointer items-center justify-center gap-2 p-2",
+        )}
+        onClick={() => setOpenPopover(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setOpenPopover(false);
+          }
         }}
       >
         <Plus size={18} className="absolute left-2.5 top-2" />
         <span className="flex-1 truncate text-center">New Project</span>
-      </Button>
+      </div>
     </div>
   );
 }

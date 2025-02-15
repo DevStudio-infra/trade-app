@@ -33,7 +33,6 @@ export const sidebarLinks: SidebarNavItem[] = [
         href: "/dashboard/billing",
         icon: "billing",
         title: "Billing",
-        authorizeOnly: UserRole.USER,
       },
       {
         href: "/admin/orders",

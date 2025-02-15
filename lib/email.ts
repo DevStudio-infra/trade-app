@@ -11,21 +11,47 @@ export const resend = new Resend(env.RESEND_API_KEY);
 
 export const sendVerificationRequest: EmailConfig["sendVerificationRequest"] =
   async ({ identifier, url, provider }) => {
+    console.log("[EMAIL] Starting verification request for:", identifier);
+
     const user = await getUserByEmail(identifier);
-    if (!user || !user.name) return;
+    console.log("[EMAIL] User lookup result:", {
+      found: !!user,
+      hasName: !!user?.name,
+      emailVerified: user?.emailVerified,
+    });
+
+    if (!user || !user.name) {
+      console.log("[EMAIL] Aborting: User not found or no name");
+      return;
+    }
 
     const userVerified = user?.emailVerified ? true : false;
     const authSubject = userVerified
       ? `Sign-in link for ${siteConfig.name}`
       : "Activate your account";
 
+    // Allow list for development testing
+    const allowedTestEmails = [
+      "tainaradelimaa@gmail.com",
+      // Add other test emails here
+    ];
+
+    const emailRecipient =
+      process.env.NODE_ENV === "development" &&
+      !allowedTestEmails.includes(identifier)
+        ? "delivered@resend.dev"
+        : identifier;
+
+    console.log("[EMAIL] Preparing to send email:", {
+      from: provider.from,
+      to: emailRecipient,
+      subject: authSubject,
+    });
+
     try {
       const { data, error } = await resend.emails.send({
         from: provider.from,
-        to:
-          process.env.NODE_ENV === "development"
-            ? "delivered@resend.dev"
-            : identifier,
+        to: emailRecipient,
         subject: authSubject,
         react: MagicLinkEmail({
           firstName: user?.name as string,
@@ -41,11 +67,13 @@ export const sendVerificationRequest: EmailConfig["sendVerificationRequest"] =
       });
 
       if (error || !data) {
+        console.error("[EMAIL] Resend API error:", error);
         throw new Error(error?.message);
       }
 
-      // console.log(data)
+      console.log("[EMAIL] Successfully sent email:", data);
     } catch (error) {
+      console.error("[EMAIL] Failed to send verification email:", error);
       throw new Error("Failed to send verification email.");
     }
   };
