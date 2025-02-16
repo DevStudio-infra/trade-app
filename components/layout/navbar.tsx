@@ -47,19 +47,21 @@ export function NavBar({ scroll = false }: NavBarProps) {
       }`}
     >
       <MaxWidthWrapper
-        className="flex h-14 items-center justify-between py-4"
+        className="flex h-14 items-center justify-between px-2 py-4 md:px-4"
         large={documentation}
       >
-        <div className="flex gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-1.5">
+        <div className="flex items-center gap-2 md:gap-10">
+          <Link href="/" className="flex items-center gap-1.5">
             <Image
               src="/_static/favicons/t2black.png"
               alt="Trade Tracker Logo"
               width={24}
               height={24}
-              className="h-10 w-10"
+              className="h-8 w-8 md:h-10 md:w-10"
             />
-            <span className="font-urban text-xl font-bold">Trade Tracker</span>
+            <span className="font-urban text-lg font-bold md:text-xl">
+              Trade Tracker
+            </span>
           </Link>
 
           {links && links.length > 0 ? (
@@ -92,7 +94,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
           ) : null}
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-1 md:gap-3">
           {/* right header for docs */}
           {documentation ? (
             <div className="hidden flex-1 items-center space-x-4 sm:justify-end lg:flex">

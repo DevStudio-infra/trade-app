@@ -1,8 +1,10 @@
-import Link from "next/link";
+"use client";
+
 import * as React from "react";
 
-import { CustomerPortalButton } from "@/components/forms/customer-portal-button";
-import { buttonVariants } from "@/components/ui/button";
+import { UserSubscriptionPlan } from "types";
+import { cn, formatDate } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,8 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn, formatDate } from "@/lib/utils";
-import { UserSubscriptionPlan } from "types";
+import { CustomerPortalButton } from "@/components/forms/customer-portal-button";
 
 interface BillingInfoProps extends React.HTMLAttributes<HTMLFormElement> {
   userSubscriptionPlan: UserSubscriptionPlan;
@@ -27,6 +28,13 @@ export function BillingInfo({ userSubscriptionPlan }: BillingInfoProps) {
     isCanceled,
     stripeCurrentPeriodEnd,
   } = userSubscriptionPlan;
+
+  const scrollToPlans = () => {
+    const plansSection = document.querySelector("#available-plans");
+    if (plansSection) {
+      plansSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <Card>
@@ -50,9 +58,9 @@ export function BillingInfo({ userSubscriptionPlan }: BillingInfoProps) {
         {isPaid && stripeCustomerId ? (
           <CustomerPortalButton userStripeId={stripeCustomerId} />
         ) : (
-          <Link href="/pricing" className={cn(buttonVariants())}>
+          <Button onClick={scrollToPlans} className={cn(buttonVariants())}>
             Choose a plan
-          </Link>
+          </Button>
         )}
       </CardFooter>
     </Card>

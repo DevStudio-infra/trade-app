@@ -19,6 +19,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { BillingFormButton } from "@/components/forms/billing-form-button";
 import { SubscriptionForm } from "@/components/forms/subscription-form";
 import { BillingInfo } from "@/components/pricing/billing-info";
 import { Icons } from "@/components/shared/icons";
@@ -46,24 +47,6 @@ export default async function BillingPage() {
 
       {/* Current Plan Overview */}
       <div className="grid gap-8">
-        <Alert className="!pl-14">
-          <Icons.warning />
-          <AlertTitle>This is a demo app.</AlertTitle>
-          <AlertDescription>
-            Trade Tracker app is using a Stripe test environment. You can find a
-            list of test card numbers on the{" "}
-            <a
-              href="https://stripe.com/docs/testing#cards"
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium underline underline-offset-8"
-            >
-              Stripe docs
-            </a>
-            .
-          </AlertDescription>
-        </Alert>
-
         <BillingInfo userSubscriptionPlan={userSubscriptionPlan} />
 
         {/* Credit Usage Stats */}
@@ -104,7 +87,7 @@ export default async function BillingPage() {
 
         {/* Pricing Plans */}
         <div className="grid gap-8">
-          <div className="flex flex-col gap-4">
+          <div id="available-plans" className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold tracking-tight">
               Available Plans
             </h2>

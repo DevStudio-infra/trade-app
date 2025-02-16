@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavItem, SidebarNavItem } from "@/types";
@@ -201,7 +202,13 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                   href="#"
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
-                  <Icons.logo className="size-6" />
+                  <Image
+                    src="/_static/favicons/t2black.png"
+                    alt="Trade Tracker Logo"
+                    width={24}
+                    height={24}
+                    className="h-6 w-6"
+                  />
                   <span className="font-urban text-xl font-bold">
                     {siteConfig.name}
                   </span>
