@@ -64,7 +64,7 @@ model User {
   apikey                 String?   @unique @default(cuid())
   hasCompletedOnboarding Boolean   @default(false)
   hasAcceptedToS         Boolean   @default(false)
-  hasAcceptedPrivacy     Boolean   @default(false)
+  hasAcceptedPrivacy     Boolean   @default(false) @map(name: "has_accepted_privacy")
 
   accounts Account[]
   sessions Session[]
