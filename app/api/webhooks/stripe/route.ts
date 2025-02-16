@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 import { Stripe } from "stripe";
 
 import { env } from "@/env.mjs";
+import { calculateCreditsFromAmount } from "@/config/credits";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { getUserSubscriptionPlan } from "@/lib/subscription";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -31,6 +33,14 @@ export async function POST(req: Request) {
       const amount = parseInt(session.metadata.amount);
 
       try {
+        // Get user's subscription status
+        const subscriptionPlan = await getUserSubscriptionPlan(userId);
+        // Calculate credits based on amount and subscription status
+        const credits = calculateCreditsFromAmount(
+          amount,
+          subscriptionPlan.isPaid,
+        );
+
         // Get or create user's credit record
         const credit = await prisma.aICredit.upsert({
           where: {
@@ -38,12 +48,14 @@ export async function POST(req: Request) {
           },
           create: {
             userId: userId,
-            balance: amount,
+            balance: credits,
+            hasPurchaseHistory: true,
           },
           update: {
             balance: {
-              increment: amount,
+              increment: credits,
             },
+            hasPurchaseHistory: true,
           },
         });
 
@@ -51,12 +63,14 @@ export async function POST(req: Request) {
         await prisma.aICreditTransaction.create({
           data: {
             creditId: credit.id,
-            amount: amount,
+            amount: credits,
             type: "PURCHASE",
             status: "COMPLETED",
             metadata: {
               stripeSessionId: session.id,
-              amount: session.amount_total,
+              paidAmount: session.amount_total,
+              creditsReceived: credits,
+              wasSubscriber: subscriptionPlan.isPaid,
             },
           },
         });

@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { AlertCircle } from "lucide-react";
 
 import { UserSubscriptionPlan } from "types";
 import { cn, formatDate } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -42,9 +44,28 @@ export function BillingInfo({ userSubscriptionPlan }: BillingInfoProps) {
         <CardTitle>Subscription Plan</CardTitle>
         <CardDescription>
           You are currently on the <strong>{title}</strong> plan.
+          {isPaid && isCanceled && (
+            <span className="ml-1 text-yellow-600">
+              (Cancels on {formatDate(stripeCurrentPeriodEnd)})
+            </span>
+          )}
         </CardDescription>
       </CardHeader>
-      <CardContent>{description}</CardContent>
+      <CardContent>
+        {description}
+
+        {isPaid && isCanceled && (
+          <Alert className="mt-4">
+            <AlertCircle className="size-4" />
+            <AlertDescription>
+              Your subscription has been canceled and will end on{" "}
+              {formatDate(stripeCurrentPeriodEnd)}. You can continue using Pro
+              features until then. Want to stay? You can reactivate your
+              subscription through the customer portal.
+            </AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
       <CardFooter className="flex flex-col items-center space-y-2 border-t bg-accent py-2 md:flex-row md:justify-between md:space-y-0">
         {isPaid ? (
           <p className="text-sm font-medium text-muted-foreground">
@@ -55,13 +76,33 @@ export function BillingInfo({ userSubscriptionPlan }: BillingInfoProps) {
           </p>
         ) : null}
 
-        {isPaid && stripeCustomerId ? (
-          <CustomerPortalButton userStripeId={stripeCustomerId} />
-        ) : (
-          <Button onClick={scrollToPlans} className={cn(buttonVariants())}>
-            Choose a plan
-          </Button>
-        )}
+        <div className="flex flex-col gap-2 md:flex-row">
+          {isPaid && stripeCustomerId ? (
+            <>
+              <CustomerPortalButton userStripeId={stripeCustomerId} />
+              {!isCanceled && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "Are you sure you want to cancel your subscription? You can reactivate it later through the customer portal.",
+                      )
+                    ) {
+                      window.location.href = `/api/stripe/portal?stripeCustomerId=${stripeCustomerId}`;
+                    }
+                  }}
+                >
+                  Cancel Subscription
+                </Button>
+              )}
+            </>
+          ) : (
+            <Button onClick={scrollToPlans} className={cn(buttonVariants())}>
+              Choose a plan
+            </Button>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

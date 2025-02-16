@@ -18,6 +18,14 @@ export const creditConfig = {
   // Thresholds
   LOW_CREDITS_WARNING_THRESHOLD: 2,
   LOW_CREDITS_NOTICE_THRESHOLD: 10,
+
+  // Stripe Price IDs for credit purchases
+  STRIPE_PRICES: {
+    CREDITS: {
+      FREE: process.env.NEXT_PUBLIC_STRIPE_FREE_CREDITS_PRICE_ID, // Price ID for standard rate (0.22€)
+      PRO: process.env.NEXT_PUBLIC_STRIPE_PRO_CREDITS_PRICE_ID, // Price ID for pro rate (0.143€)
+    },
+  },
 } as const;
 
 // Helper functions
