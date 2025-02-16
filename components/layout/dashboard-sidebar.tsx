@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavItem, SidebarNavItem } from "@/types";
 import { Menu, PanelLeftClose, PanelRightClose } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
@@ -180,6 +181,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const { isSm, isMobile } = useMediaQuery();
+  const { theme } = useTheme();
 
   if (isSm || isMobile) {
     return (
@@ -203,7 +205,11 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
                   <Image
-                    src="/_static/favicons/t2black.png"
+                    src={
+                      theme === "dark"
+                        ? "/_static/favicons/t2white.png"
+                        : "/_static/favicons/t2black.png"
+                    }
                     alt="Trade Tracker Logo"
                     width={24}
                     height={24}

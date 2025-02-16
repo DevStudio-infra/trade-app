@@ -4,6 +4,12 @@ import { useState } from "react";
 import { UserSubscriptionPlan } from "@/types";
 import { ShoppingCart } from "lucide-react";
 
+import {
+  calculateCreditPrice,
+  calculateCreditsFromAmount,
+  creditConfig,
+  formatCreditPrice,
+} from "@/config/credits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -18,13 +24,13 @@ export function CreditPurchase({
   userId,
   subscriptionPlan,
 }: CreditPurchaseProps) {
-  const [amount, setAmount] = useState(6); // Minimum purchase amount
+  const [amount, setAmount] = useState<number>(
+    creditConfig.MIN_PURCHASE_AMOUNT,
+  );
   const [isLoading, setIsLoading] = useState(false);
 
-  const basePrice = 0.38; // Base price per credit
-  const discount = subscriptionPlan.isPaid ? 0.2 : 0; // 20% discount for Pro users
-  const finalPrice = basePrice * (1 - discount);
-  const credits = Math.floor(amount / finalPrice);
+  const finalPrice = calculateCreditPrice(subscriptionPlan.isPaid);
+  const credits = calculateCreditsFromAmount(amount, subscriptionPlan.isPaid);
 
   const handlePurchase = async () => {
     setIsLoading(true);
@@ -68,8 +74,8 @@ export function CreditPurchase({
           <Slider
             value={[amount]}
             onValueChange={([value]) => setAmount(value)}
-            min={6}
-            max={1000}
+            min={creditConfig.MIN_PURCHASE_AMOUNT}
+            max={creditConfig.MAX_PURCHASE_AMOUNT}
             step={1}
             className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
           />
@@ -83,12 +89,12 @@ export function CreditPurchase({
           {subscriptionPlan.isPaid && (
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Pro discount</span>
-              <span>-20%</span>
+              <span>-{creditConfig.PRO_DISCOUNT * 100}%</span>
             </div>
           )}
           <div className="flex justify-between text-sm font-medium">
             <span>Price per credit</span>
-            <span>{finalPrice.toFixed(2)}€</span>
+            <span>{formatCreditPrice(finalPrice)}</span>
           </div>
         </div>
 

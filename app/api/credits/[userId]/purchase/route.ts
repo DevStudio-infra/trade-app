@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+import {
+  calculateCreditPrice,
+  calculateCreditsFromAmount,
+  creditConfig,
+} from "@/config/credits";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { stripe } from "@/lib/stripe";
@@ -23,17 +28,14 @@ export async function POST(
 
     const { amount } = await req.json();
 
-    if (!amount || amount < 1) {
+    if (!amount || amount < creditConfig.MIN_PURCHASE_AMOUNT) {
       return new NextResponse("Invalid amount", { status: 400 });
     }
 
     const subscriptionPlan = await getUserSubscriptionPlan(user.id);
     const isPro = subscriptionPlan.isPaid;
-    const discount = isPro ? 0.2 : 0; // 20% discount for Pro users
-
-    // Base price per credit is $0.50
-    const basePrice = 0.5;
-    const finalPrice = basePrice * amount * (1 - discount);
+    const finalPrice = calculateCreditPrice(isPro);
+    const credits = calculateCreditsFromAmount(amount, isPro);
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -41,12 +43,16 @@ export async function POST(
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: "eur",
             product_data: {
               name: "AI Analysis Credits",
-              description: `Purchase ${amount} AI analysis credits${isPro ? " (20% Pro discount applied)" : ""}`,
+              description: `Purchase ${credits} AI analysis credits${
+                isPro
+                  ? ` (${creditConfig.PRO_DISCOUNT * 100}% Pro discount applied)`
+                  : ""
+              }`,
             },
-            unit_amount: Math.round(finalPrice * 100), // Convert to cents
+            unit_amount: Math.round(amount * 100), // Convert to cents
           },
           quantity: 1,
         },
@@ -56,6 +62,7 @@ export async function POST(
       cancel_url: absoluteUrl("/dashboard/credits?success=false"),
       metadata: {
         userId: user.id,
+        credits: credits.toString(),
         amount: amount.toString(),
       },
     });

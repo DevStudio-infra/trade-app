@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 
 import { docsConfig } from "@/config/docs";
 import { marketingConfig } from "@/config/marketing";
@@ -29,6 +30,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
   const scrolled = useScroll(50);
   const { data: session, status } = useSession();
   const { setShowSignInModal } = useContext(ModalContext);
+  const { theme } = useTheme();
 
   const selectedLayout = useSelectedLayoutSegment();
   const documentation = selectedLayout === "docs";
@@ -53,7 +55,11 @@ export function NavBar({ scroll = false }: NavBarProps) {
         <div className="flex items-center gap-2 md:gap-10">
           <Link href="/" className="flex items-center gap-1.5">
             <Image
-              src="/_static/favicons/t2black.png"
+              src={
+                theme === "dark"
+                  ? "/_static/favicons/t2white.png"
+                  : "/_static/favicons/t2black.png"
+              }
               alt="Trade Tracker Logo"
               width={24}
               height={24}

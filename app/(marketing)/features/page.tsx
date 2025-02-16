@@ -132,6 +132,61 @@ export default function FeaturesPage() {
         </div>
       </div>
 
+      {/* AI Trading Copilot Explanation Section */}
+      <section className="mx-auto max-w-4xl rounded-xl border bg-card p-8 shadow-lg">
+        <h2 className="font-heading text-2xl md:text-3xl">
+          How Our AI Trading Copilot Works
+        </h2>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-heading text-lg">
+                Real-Time Market Analysis
+              </h3>
+              <p className="text-muted-foreground">
+                Our AI continuously analyzes market data, price patterns, and
+                trading volumes to identify potential opportunities and risks in
+                real-time.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-heading text-lg">Personalized Insights</h3>
+              <p className="text-muted-foreground">
+                The AI adapts to your trading style and risk tolerance,
+                providing customized recommendations and alerts tailored to your
+                preferences.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-heading text-lg">Pattern Recognition</h3>
+              <p className="text-muted-foreground">
+                Advanced machine learning algorithms detect complex market
+                patterns and technical indicators that might be missed by human
+                traders.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-heading text-lg">Risk Management</h3>
+              <p className="text-muted-foreground">
+                Get intelligent suggestions for position sizing, stop-loss
+                levels, and risk exposure based on market volatility and your
+                portfolio.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 rounded-lg bg-primary/5 p-4">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-primary">Note:</span> Our AI
+            Copilot is designed to assist and enhance your trading decisions,
+            not to replace human judgment. Always conduct your own research and
+            risk assessment.
+          </p>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="mx-auto max-w-3xl text-center">
         <h2 className="font-heading text-2xl md:text-3xl">
